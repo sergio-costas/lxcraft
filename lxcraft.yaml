@@ -1,0 +1,15 @@
+vmname: gtk3test
+image: ubuntu/jammy
+
+snaps:
+  core22:
+    - standard
+  gtk-common-themes:
+    - standard
+  /home/raster/workspace/snapcraft/snapcraft.snap:
+    - classic
+    - local
+  /home/raster/workspace/gnome-sdk/
+
+debs:
+  cmake

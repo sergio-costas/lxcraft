@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+
+import sys
+import yaml
+import getopt
+import os
+
+options = getopt.gnu_getopt(sys.argv, "", [])
+
+data = yaml.safe_load(open("lxcraft.yaml", "r"))
+
+command = options[1][1]
+vmname = data['vmname']
+if 'debs' in data:
+    debs = data[debs]
+else:
+    debs = []
+
+
+def copy_file_into(file, destination):
+    global vmname
+
+    if (destination[0] != '/'):
+        destination = '/' + destination
+    run_in_vm(f'-- sh -c "mkdir -p {destination}"')
+    retval = os.system(f"lxc file push {file} {vmname}{destination}/")
+    run_in_vm(f"ls {destination}")
+
+
+def run_in_vm(command):
+    global vmname
+    return os.system(f"lxc exec {vmname} {command}")
+
+
+def run_in_vm_raise(command):
+    retval = run_in_vm(command)
+    if (retval != 0):
+        sys.exit(retval)
+
+def run_shell_in_vm(command):
+    return run_in_vm('-- exec sh -c "{command}"')
+
+def run_shell_in_vm_raise(command):
+    retval = run_shell_in_vm(command)
+    if (retval != 0):
+        sys.exit(retval)
+
+def update_vm():
+    run_in_vm_raise("-- apt update")
+    run_in_vm_raise("-- apt dist-upgrade -yy")
+
+
+def install_snaps():
+    global data
+    global vmname
+    global debs
+
+    debs = 'snapd build-essential coreutils'
+    for deb in debs:
+        debs += " " + deb
+    run_in_vm_raise("-- apt install -yy snapd build-essential")
+
+    if 'snaps' not in data:
+        return 0
+    run_shell_in_vm('mkdir -p /local_snaps')
+    for snap in data['snaps']:
+        local = False
+        name = snap
+        params = data['snaps'][snap]
+        if 'local' in params:
+            print(f"Installing local snap: {snap}")
+            copy_file_into(snap, '/local_snaps')
+            local = True
+            name = f'/local_snaps/{os.path.basename(snap)}'
+        command = "-- snap install "
+        if local:
+            command += "--dangerous "
+        if 'classic' in params:
+            command += "--classic "
+        command += name
+        run_in_vm_raise(command)
+    run_shell_in_vm('rm -rf /local_snaps')
+
+
+if (command == 'init'):
+    retval = os.system(f"lxc launch images:{data['image']} {vmname}")
+    if retval != 0:
+        sys.exit(retval)
+    update_vm()
+    install_snaps()
+    sys.exit(0)
+
+elif command == 'destroy':
+    print(f"Stopping {vmname}")
+    retval = os.system(f"lxc stop {vmname}")
+    if (retval == 0):
+        print(f"Destroying {vmname}")
+        retval = os.system(f"lxc delete {vmname}")
+    sys.exit(retval)
+
+elif command == 'update':
+    update_vm()
+    sys.exit(0)
+
+elif command == 'build':
+    install_snaps()
+    os.system('rm -f data_for_vm.tar')
+    os.system(f"tar cvf data_for_vm.tar *")
+    run_shell_in_vm_raise('rm -rf /src && mkdir -p /src')
+    copy_file_into('data_for_vm.tar', '/src')
+    os.system('rm -f data_for_vm.tar')
+    os.system('rm -f created_snaps.tar')
+    run_shell_in_vm_raise("tar xf /src/data_for_vm.tar -C /src/")
+    run_shell_in_vm(f'cd /src && rm -f *.snap && snapcraft pack --destructive-mode')
+    run_shell_in_vm('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
+    os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
+    run_shell_in_vm('rm -f created_snaps.tar')
+    os.system('tar xf created_snaps.tar')
+    os.system('rm -f created_snaps.tar')
+
+    sys.exit(0)
+
+else:
+    print(f"Unknown command {command}")
+    sys.exit(-1)
