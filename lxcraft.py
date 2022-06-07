@@ -4,6 +4,7 @@ import sys
 import yaml
 import getopt
 import os
+import glob
 
 options = getopt.gnu_getopt(sys.argv, "", [])
 
@@ -35,14 +36,16 @@ def run_in_vm(command):
 def run_in_vm_raise(command):
     retval = run_in_vm(command)
     if (retval != 0):
+        print(f"Error while executing '{command}' inside the VM")
         sys.exit(retval)
 
 def run_shell_in_vm(command):
-    return run_in_vm('-- exec sh -c "{command}"')
+    return run_in_vm(f'-- sh -c "{command}"')
 
 def run_shell_in_vm_raise(command):
     retval = run_shell_in_vm(command)
     if (retval != 0):
+        print(f"Error while executing '{command}' inside the VM in a shell")
         sys.exit(retval)
 
 def update_vm():
@@ -69,6 +72,18 @@ def install_snaps():
         params = data['snaps'][snap]
         if 'local' in params:
             print(f"Installing local snap: {snap}")
+            if ('*' in snap) or ('?' in snap):
+                # expand the name and get the most recent snap
+                last_date = None
+                last_snap = None
+                for f in glob.glob(snap):
+                    file_date = os.path.getmtime(f)
+                    if (last_date is None) or (last_date < file_date):
+                        last_snap = f
+                        last_date = file_date
+                if last_snap is None:
+                    continue
+                snap = last_snap
             copy_file_into(snap, '/local_snaps')
             local = True
             name = f'/local_snaps/{os.path.basename(snap)}'
@@ -105,19 +120,24 @@ elif command == 'update':
 elif command == 'build':
     install_snaps()
     os.system('rm -f data_for_vm.tar')
-    os.system(f"tar cvf data_for_vm.tar *")
-    run_shell_in_vm_raise('rm -rf /src && mkdir -p /src')
+    os.system(f"tar cf data_for_vm.tar *")
+    run_shell_in_vm_raise('rm -rf /src')
+    run_shell_in_vm_raise('mkdir -p /src')
     copy_file_into('data_for_vm.tar', '/src')
     os.system('rm -f data_for_vm.tar')
     os.system('rm -f created_snaps.tar')
-    run_shell_in_vm_raise("tar xf /src/data_for_vm.tar -C /src/")
-    run_shell_in_vm(f'cd /src && rm -f *.snap && snapcraft pack --destructive-mode')
-    run_shell_in_vm('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
+    run_shell_in_vm_raise("cd /src && tar xf data_for_vm.tar")
+    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft pack --destructive-mode')
+    run_shell_in_vm_raise('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
-    run_shell_in_vm('rm -f created_snaps.tar')
+    run_shell_in_vm_raise('rm -f created_snaps.tar')
     os.system('tar xf created_snaps.tar')
     os.system('rm -f created_snaps.tar')
 
+    sys.exit(0)
+
+elif command == 'shell':
+    run_in_vm('sh')
     sys.exit(0)
 
 else:
