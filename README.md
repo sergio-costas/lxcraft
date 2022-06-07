@@ -33,6 +33,9 @@ This is an example configuration file:
 building the snap. They can be obtained from the store or from a
 local file. If it is local, the name can contain wildcards, in
 which case the most recent file matching the expression will be
-installed.
+installed. An important detail is that the order is preserved,
+so it is possible to specify a local snap to be installed before
+another from the store that depends on that, thus ensuring that
+the local will be installed.
 * debs: contains a list of .deb files to be installed inside the
 container before building the snap.
