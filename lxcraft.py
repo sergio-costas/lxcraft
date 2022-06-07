@@ -8,8 +8,6 @@ import glob
 
 options = getopt.gnu_getopt(sys.argv, "", [])
 
-data = yaml.safe_load(open("lxcraft.yaml", "r"))
-
 def print_options():
     print("Usage: lxcraft [init|destroy|update|build]")
     print("  init: initializes the container and installs the needed .deb packages")
@@ -23,12 +21,13 @@ if len(options[1]) == 1:
     sys.exit(-1)
 
 command = options[1][1]
+
+data = yaml.safe_load(open("lxcraft.yaml", "r"))
 vmname = data['vmname']
 if 'debs' in data:
-    debs = data[debs]
+    debs = data['debs']
 else:
     debs = []
-
 
 def copy_file_into(file, destination):
     global vmname
@@ -70,10 +69,10 @@ def install_snaps():
     global vmname
     global debs
 
-    debs = 'snapd build-essential coreutils'
+    deblist = 'snapd build-essential coreutils'
     for deb in debs:
-        debs += " " + deb
-    run_in_vm_raise("-- apt install -yy snapd build-essential")
+        deblist += " " + deb
+    run_in_vm_raise(f"-- apt install -yy " + deblist)
 
     if 'snaps' not in data:
         return 0
