@@ -10,6 +10,18 @@ options = getopt.gnu_getopt(sys.argv, "", [])
 
 data = yaml.safe_load(open("lxcraft.yaml", "r"))
 
+def print_options():
+    print("Usage: lxcraft [init|destroy|update|build]")
+    print("  init: initializes the container and installs the needed .deb packages")
+    print("  destroy: destroys the container")
+    print("  update: updates the .deb packages")
+    print("  build: builds the .snap file")
+
+
+if len(options[1]) == 1:
+    print_options()
+    sys.exit(-1)
+
 command = options[1][1]
 vmname = data['vmname']
 if 'debs' in data:
@@ -97,6 +109,21 @@ def install_snaps():
     run_shell_in_vm('rm -rf /local_snaps')
 
 
+def check_syntax():
+    global data
+
+    for snap in data['snaps']:
+        params = data['snaps'][snap]
+        if params is None:
+            print(f"Snap {snap} lacks parameters. Aborting.")
+            sys.exit(-1)
+        if ('local' not in params) and ('store' not in params):
+            print(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
+            sys.exit(-1)
+
+
+check_syntax()
+
 if (command == 'init'):
     retval = os.system(f"lxc launch images:{data['image']} {vmname}")
     if retval != 0:
@@ -140,6 +167,12 @@ elif command == 'shell':
     run_in_vm('sh')
     sys.exit(0)
 
+elif command == 'help':
+    print_options()
+    sys.exit(-1)
+
 else:
     print(f"Unknown command {command}")
+    print()
+    print_options()
     sys.exit(-1)

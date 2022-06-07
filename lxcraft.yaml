@@ -3,13 +3,14 @@ image: ubuntu/jammy
 
 snaps:
   core22:
-    - standard
+    - store
   gtk-common-themes:
-    - standard
+    - store
   /home/raster/workspace/snapcraft/snapcraft.snap:
     - classic
     - local
-  /home/raster/workspace/gnome-sdk/
+  /home/raster/workspace/gnome-sdk/:
+    - local
 
 debs:
   cmake
