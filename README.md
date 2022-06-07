@@ -39,3 +39,15 @@ another from the store that depends on that, thus ensuring that
 the local will be installed.
 * debs: contains a list of .deb files to be installed inside the
 container before building the snap.
+
+## Using lxcraft
+
+Just create a configuration file called *lxcraft.yaml* in your project's
+folder and then run:
+
+    lxcraft init
+    lxcraft build
+
+It will create the container, install the snaps and .deb files, copy
+all the files in the current folder into the container, create the
+snap, and copy it outside the container.
