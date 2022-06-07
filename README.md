@@ -51,3 +51,17 @@ folder and then run:
 It will create the container, install the snaps and .deb files, copy
 all the files in the current folder into the container, create the
 snap, and copy it outside the container.
+
+To update the packages inside the container, just use *lxcraft update*.
+It will do:
+
+    apt update
+    apt dist-upgrade -yy
+
+inside the container.
+
+To destroy the container, just use *lxcraft destroy*. It can be
+regenerated with *lxcraft init* again if needed.
+
+Finally, it is possible to run a shell inside the container just
+with *lxcraft shell*.

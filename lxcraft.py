@@ -9,11 +9,12 @@ import glob
 options = getopt.gnu_getopt(sys.argv, "", [])
 
 def print_options():
-    print("Usage: lxcraft [init|destroy|update|build]")
+    print("Usage: lxcraft [init|destroy|update|build|shell]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
     print("  update: updates the .deb packages")
     print("  build: builds the .snap file")
+    print("  shell: opens a shell inside the container")
 
 
 if len(options[1]) == 1:
@@ -128,7 +129,6 @@ if (command == 'init'):
     if retval != 0:
         sys.exit(retval)
     update_vm()
-    install_snaps()
     sys.exit(0)
 
 elif command == 'destroy':
