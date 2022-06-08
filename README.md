@@ -75,5 +75,14 @@ inside the container.
 To destroy the container, just use *lxcraft destroy*. It can be
 regenerated with *lxcraft init* again if needed.
 
+You can user *lxcraft clean* to fully remove the working directory
+inside the container, thus allowing to start from the beginning
+with *snapcraft* but without having to destroy and re-recreate the
+container from scratch.
+
+Also, you can run specific *snapcraft* commands with
+*lxcraft snapcraft command ...*. This allows to clean an specific
+part, or to just execute one part...
+
 Finally, it is possible to run a shell inside the container just
 with *lxcraft shell*.

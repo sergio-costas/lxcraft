@@ -195,6 +195,19 @@ elif command == 'help':
     print_options()
     sys.exit(-1)
 
+elif command == 'snapcraft':
+    if len(sys.argv) == 2:
+        print("The snapcraft command requires at least one parameter.")
+        sys.exit(-1)
+
+    cmd = "cd /src && snapcraft"
+    for p in sys.argv[2:]:
+        cmd += " " + p
+
+    cmd += " --destructive-mode"
+    run_shell_in_vm_raise(cmd)
+    sys.exit(0)
+
 else:
     print(f"Unknown command {command}")
     print()
