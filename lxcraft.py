@@ -165,7 +165,13 @@ elif command == 'update':
 elif command == 'build':
     install_snaps()
     os.system('rm -f data_for_vm.tar')
-    os.system(f"tar cf data_for_vm.tar *")
+    if 'files' in data:
+        tarlist = ""
+        for f in data['files']:
+            tarlist += ' ' + f
+    else:
+        tarlist = ' *'
+    os.system(f"tar cf data_for_vm.tar {tarlist}")
     run_shell_in_vm_raise('rm -rf /tartmp')
     run_shell_in_vm_raise('mkdir -p /src')
     run_shell_in_vm_raise('mkdir -p /tartmp')

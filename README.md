@@ -28,6 +28,10 @@ This is an example configuration file:
       - cmake
       - lint
 
+    files:
+      - meta/snapcraft.yaml
+      - icon.png
+
 * vmname contains the name for the LXC container
 
 * image: the image from which generate the container
@@ -51,6 +55,10 @@ the local will be installed. Each snap can have these elements:
 
 * debs: contains a list of .deb files to be installed inside the
 container before building the snap. It is optional.
+
+* files: contains a list of files and/or folders to copy into the working
+folder inside the container. It is optional; if it isn't specified, all
+the files and folders will be copied inside.
 
 ## Using lxcraft
 

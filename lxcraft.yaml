@@ -15,3 +15,7 @@ snaps:
 debs:
   - cmake
   - lint
+
+files:
+  - snap/snapcraft.yaml
+  - icon.png
