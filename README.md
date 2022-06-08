@@ -15,6 +15,7 @@ This is an example configuration file:
     snaps:
       core22:
         - store
+        - edge
       gtk-common-themes:
         - store
       /home/raster/workspace/snapcraft/snapcraft*.snap:
@@ -28,17 +29,28 @@ This is an example configuration file:
       - lint
 
 * vmname contains the name for the LXC container
+
 * image: the image from which generate the container
-* snaps: a list with the snaps to install inside the container before
-building the snap. They can be obtained from the store or from a
-local file. If it is local, the name can contain wildcards, in
-which case the most recent file matching the expression will be
-installed. An important detail is that the order is preserved,
+
+* snaps: an optional list with the snaps to install inside the
+container before building the snap. They can be obtained from the
+store or from a local file. If it is local, the name can contain
+wildcards, in which case the most recent file matching the expression
+will be installed. An important detail is that the order is preserved,
 so it is possible to specify a local snap to be installed before
 another from the store that depends on that, thus ensuring that
-the local will be installed.
+the local will be installed. Each snap can have these elements:
+
+  * store: it means that the snap must be downloaded from the SNAP store
+
+  * local: the snap is located in the local drive, in the specified path
+
+  * classic: the snap requires the --classic parameter to be installed
+
+  * edge: only for 'store' snaps, specifies to install from latest/edge
+
 * debs: contains a list of .deb files to be installed inside the
-container before building the snap.
+container before building the snap. It is optional.
 
 ## Using lxcraft
 

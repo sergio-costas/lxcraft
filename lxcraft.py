@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+# Copyright 2022 Canonical Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import sys
 import yaml
 import getopt
@@ -9,11 +23,12 @@ import glob
 options = getopt.gnu_getopt(sys.argv, "", [])
 
 def print_options():
-    print("Usage: lxcraft [init|destroy|update|build|shell]")
+    print("Usage: lxcraft [init|destroy|update|build|clean|shell]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
     print("  update: updates the .deb packages")
     print("  build: builds the .snap file")
+    print("  clean: deletes all the files in the build folder, to start over")
     print("  shell: opens a shell inside the container")
 
 
@@ -25,6 +40,7 @@ command = options[1][1]
 
 data = yaml.safe_load(open("lxcraft.yaml", "r"))
 vmname = data['vmname']
+
 if 'debs' in data:
     debs = data['debs']
 else:
@@ -70,7 +86,7 @@ def install_snaps():
     global vmname
     global debs
 
-    deblist = 'snapd build-essential coreutils'
+    deblist = 'snapd build-essential coreutils rsync'
     for deb in debs:
         deblist += " " + deb
     run_in_vm_raise(f"-- apt install -yy " + deblist)
@@ -82,6 +98,7 @@ def install_snaps():
         local = False
         name = snap
         params = data['snaps'][snap]
+        command = "-- snap install "
         if 'local' in params:
             print(f"Installing local snap: {snap}")
             if ('*' in snap) or ('?' in snap):
@@ -99,7 +116,9 @@ def install_snaps():
             copy_file_into(snap, '/local_snaps')
             local = True
             name = f'/local_snaps/{os.path.basename(snap)}'
-        command = "-- snap install "
+        else:
+            if 'edge' in params:
+                command += '--edge '
         if local:
             command += "--dangerous "
         if 'classic' in params:
@@ -147,12 +166,14 @@ elif command == 'build':
     install_snaps()
     os.system('rm -f data_for_vm.tar')
     os.system(f"tar cf data_for_vm.tar *")
-    run_shell_in_vm_raise('rm -rf /src')
+    run_shell_in_vm_raise('rm -rf /tartmp')
     run_shell_in_vm_raise('mkdir -p /src')
-    copy_file_into('data_for_vm.tar', '/src')
+    run_shell_in_vm_raise('mkdir -p /tartmp')
+    copy_file_into('data_for_vm.tar', '/tartmp')
     os.system('rm -f data_for_vm.tar')
     os.system('rm -f created_snaps.tar')
-    run_shell_in_vm_raise("cd /src && tar xf data_for_vm.tar")
+    run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
+    run_shell_in_vm_raise("rsync -a /tartmp/ /src/")
     run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft pack --destructive-mode')
     run_shell_in_vm_raise('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
@@ -160,6 +181,10 @@ elif command == 'build':
     os.system('tar xf created_snaps.tar')
     os.system('rm -f created_snaps.tar')
 
+    sys.exit(0)
+
+elif command == 'clean':
+    run_shell_in_vm_raise("rm -rf /src")
     sys.exit(0)
 
 elif command == 'shell':
