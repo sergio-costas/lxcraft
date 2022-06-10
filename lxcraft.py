@@ -19,16 +19,18 @@ import yaml
 import getopt
 import os
 import glob
+import logging
 
 options = getopt.gnu_getopt(sys.argv, "", [])
 
 def print_options():
-    print("Usage: lxcraft [init|destroy|update|build|clean|shell]")
+    print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
     print("  update: updates the .deb packages")
     print("  build: builds the .snap file")
     print("  clean: deletes all the files in the build folder, to start over")
+    print("  snapcraft XXXX: executes the command XXXX with snapcraft inside the container")
     print("  shell: opens a shell inside the container")
 
 
@@ -45,6 +47,8 @@ if 'debs' in data:
     debs = data['debs']
 else:
     debs = []
+
+logging.basicConfig(level=logging.INFO)
 
 def copy_file_into(file, destination):
     global vmname
@@ -64,7 +68,7 @@ def run_in_vm(command):
 def run_in_vm_raise(command):
     retval = run_in_vm(command)
     if (retval != 0):
-        print(f"Error while executing '{command}' inside the VM")
+        logging.error(f"Error while executing '{command}' inside the VM")
         sys.exit(retval)
 
 def run_shell_in_vm(command):
@@ -73,7 +77,7 @@ def run_shell_in_vm(command):
 def run_shell_in_vm_raise(command):
     retval = run_shell_in_vm(command)
     if (retval != 0):
-        print(f"Error while executing '{command}' inside the VM in a shell")
+        logging.error(f"Error while executing '{command}' inside the VM in a shell")
         sys.exit(retval)
 
 def update_vm():
@@ -89,6 +93,7 @@ def install_snaps():
     deblist = 'snapd build-essential coreutils rsync'
     for deb in debs:
         deblist += " " + deb
+    logging.info(f"Installing packages {deblist}")
     run_in_vm_raise(f"-- apt install -yy " + deblist)
 
     if 'snaps' not in data:
@@ -100,7 +105,7 @@ def install_snaps():
         params = data['snaps'][snap]
         command = "-- snap install "
         if 'local' in params:
-            print(f"Installing local snap: {snap}")
+            logging.info(f"Installing local snap: {snap}")
             if ('*' in snap) or ('?' in snap):
                 # expand the name and get the most recent snap
                 last_date = None
@@ -111,8 +116,13 @@ def install_snaps():
                         last_snap = f
                         last_date = file_date
                 if last_snap is None:
+                    logging.error(f"No snap found at {snap}")
+                    sys.exit(-1)
                     continue
                 snap = last_snap
+            if not os.path.exists(snap):
+                logging.error(f"The snap file {snap} doesn't exist")
+                sys.exit(-1)
             copy_file_into(snap, '/local_snaps')
             local = True
             name = f'/local_snaps/{os.path.basename(snap)}'
@@ -134,10 +144,10 @@ def check_syntax():
     for snap in data['snaps']:
         params = data['snaps'][snap]
         if params is None:
-            print(f"Snap {snap} lacks parameters. Aborting.")
+            logging.error(f"Snap {snap} lacks parameters. Aborting.")
             sys.exit(-1)
         if ('local' not in params) and ('store' not in params):
-            print(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
+            logging.critical(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
             sys.exit(-1)
 
 
@@ -151,10 +161,10 @@ if (command == 'init'):
     sys.exit(0)
 
 elif command == 'destroy':
-    print(f"Stopping {vmname}")
+    logging.info(f"Stopping {vmname}")
     retval = os.system(f"lxc stop {vmname}")
     if (retval == 0):
-        print(f"Destroying {vmname}")
+        logging.info(f"Destroying {vmname}")
         retval = os.system(f"lxc delete {vmname}")
     sys.exit(retval)
 
@@ -203,7 +213,7 @@ elif command == 'help':
 
 elif command == 'snapcraft':
     if len(sys.argv) == 2:
-        print("The snapcraft command requires at least one parameter.")
+        logging.error("The snapcraft command requires at least one parameter.")
         sys.exit(-1)
 
     cmd = "cd /src && snapcraft"
