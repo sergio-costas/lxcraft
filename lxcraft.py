@@ -211,7 +211,7 @@ elif command == 'help':
     print_options()
     sys.exit(-1)
 
-elif command == 'snapcraft':
+elif sys.argv[1] == 'snapcraft':
     if len(sys.argv) == 2:
         logging.error("The snapcraft command requires at least one parameter.")
         sys.exit(-1)
