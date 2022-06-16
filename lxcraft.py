@@ -204,7 +204,7 @@ elif command == 'clean':
     sys.exit(0)
 
 elif command == 'shell':
-    run_in_vm('sh')
+    run_in_vm('bash')
     sys.exit(0)
 
 elif command == 'help':
