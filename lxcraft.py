@@ -32,6 +32,7 @@ def print_options():
     print("  clean: deletes all the files in the build folder, to start over")
     print("  snapcraft XXXX: executes the command XXXX with snapcraft inside the container")
     print("  shell: opens a shell inside the container")
+    print("  installdeps: installs in the local system the snap dependencies")
     print("  help: shows this help")
 
 
@@ -86,6 +87,27 @@ def update_vm():
     run_in_vm_raise("-- apt dist-upgrade -yy")
 
 
+def get_snap(snap):
+    if ('*' in snap) or ('?' in snap):
+        # expand the name and get the most recent snap
+        last_date = None
+        last_snap = None
+        for f in glob.glob(snap):
+            file_date = os.path.getmtime(f)
+            if (last_date is None) or (last_date < file_date):
+                last_snap = f
+                last_date = file_date
+        if last_snap is None:
+            logging.error(f"No snap found at {snap}")
+            return None
+        snap = last_snap
+    if not os.path.exists(snap):
+        logging.error(f"The snap file {snap} doesn't exist")
+        return None
+    else:
+        return snap
+
+
 def install_snaps():
     global data
     global vmname
@@ -107,22 +129,8 @@ def install_snaps():
         command = "-- snap install "
         if 'local' in params:
             logging.info(f"Installing local snap: {snap}")
-            if ('*' in snap) or ('?' in snap):
-                # expand the name and get the most recent snap
-                last_date = None
-                last_snap = None
-                for f in glob.glob(snap):
-                    file_date = os.path.getmtime(f)
-                    if (last_date is None) or (last_date < file_date):
-                        last_snap = f
-                        last_date = file_date
-                if last_snap is None:
-                    logging.error(f"No snap found at {snap}")
-                    sys.exit(-1)
-                    continue
-                snap = last_snap
-            if not os.path.exists(snap):
-                logging.error(f"The snap file {snap} doesn't exist")
+            snap = get_snap(snap)
+            if snap is None:
                 sys.exit(-1)
             copy_file_into(snap, '/local_snaps')
             local = True
@@ -224,6 +232,30 @@ elif sys.argv[1] == 'snapcraft':
     cmd += " --destructive-mode"
     run_shell_in_vm_raise(cmd)
     sys.exit(0)
+
+elif sys.argv[1] == 'installdeps':
+    for snap in data['snaps']:
+        local = False
+        name = snap
+        params = data['snaps'][snap]
+        command = "snap install "
+        if 'local' in params:
+            logging.info(f"Installing local snap: {snap}")
+            snap = get_snap(snap)
+            if snap is None:
+                sys.exit(-1)
+            copy_file_into(snap, '/local_snaps')
+            local = True
+            name = snap
+        else:
+            if 'edge' in params:
+                command += '--edge '
+        if local:
+            command += "--dangerous "
+        if 'classic' in params:
+            command += "--classic "
+        command += name
+        os.system(command)
 
 else:
     print(f"Unknown command {command}")
