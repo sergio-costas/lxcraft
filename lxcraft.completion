@@ -1,0 +1,3 @@
+#/usr/bin/env bash
+
+complete -W "init destroy update build clean shell help snapcraft" lxcraft.py

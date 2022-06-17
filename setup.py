@@ -27,6 +27,8 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
     ],
-
+    data_files=[
+        ('/etc/bash_completion.d', ['lxcraft.completion']),
+    ],
     scripts=['lxcraft.py'],
 )

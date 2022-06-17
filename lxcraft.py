@@ -32,6 +32,7 @@ def print_options():
     print("  clean: deletes all the files in the build folder, to start over")
     print("  snapcraft XXXX: executes the command XXXX with snapcraft inside the container")
     print("  shell: opens a shell inside the container")
+    print("  help: shows this help")
 
 
 if len(options[1]) == 1:
