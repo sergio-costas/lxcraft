@@ -2,8 +2,8 @@
 
 Simplifies building snap files that depend on locally modified snap files.
 
-It builds the snap inside a LXC container, and everything is defined with
-a YAML file.
+It builds the snap inside a LXC container using "--destructive-mode", which
+allows to do it in a safe way. Everything is defined with a YAML file.
 
 ## YAML format
 
@@ -65,14 +65,14 @@ the files and folders will be copied inside.
 Just create a configuration file called *lxcraft.yaml* in your project's
 folder and then run:
 
-    lxcraft init
-    lxcraft build
+    lxcraft.py init
+    lxcraft.py build
 
 It will create the container, install the snaps and .deb files, copy
 all the files in the current folder into the container, create the
 snap, and copy it outside the container.
 
-To update the packages inside the container, just use *lxcraft update*.
+To update the packages inside the container, just use *lxcraft.py update*.
 It will do:
 
     apt update
@@ -80,17 +80,17 @@ It will do:
 
 inside the container.
 
-To destroy the container, just use *lxcraft destroy*. It can be
-regenerated with *lxcraft init* again if needed.
+To destroy the container, just use *lxcraft.py destroy*. It can be
+regenerated with *lxcraft.py init* again if needed.
 
-You can user *lxcraft clean* to fully remove the working directory
+You can user *lxcraft.py clean* to fully remove the working directory
 inside the container, thus allowing to start from the beginning
 with *snapcraft* but without having to destroy and re-recreate the
 container from scratch.
 
 Also, you can run specific *snapcraft* commands inside the container
-with *lxcraft snapcraft command ...*. This allows to clean an
+with *lxcraft.py snapcraft command ...*. This allows to clean an
 specific part, or to just execute one part...
 
 Finally, it is possible to run a shell inside the container just
-with *lxcraft shell*.
+with *lxcraft.py shell*.
