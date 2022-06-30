@@ -6,10 +6,10 @@ snaps:
     - store
   gtk-common-themes:
     - store
-  /home/raster/workspace/snapcraft/snapcraft.snap:
+  /home/raster/workspace/snapcraft/snapcraft*.snap:
     - classic
     - local
-  /home/raster/workspace/gnome-sdk/:
+  /home/raster/workspace/gnome-sdk/gnome-sdk.snap:
     - local
 
 debs:
