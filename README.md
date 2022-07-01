@@ -94,3 +94,6 @@ specific part, or to just execute one part...
 
 Finally, it is possible to run a shell inside the container just
 with *lxcraft.py shell*.
+
+You can also pass the *-v* parameter, which will be added to *snapcraft*
+when called.

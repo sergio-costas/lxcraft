@@ -21,10 +21,13 @@ import os
 import glob
 import logging
 
-options = getopt.gnu_getopt(sys.argv, "", [])
+if (len(sys.argv) > 1) and (sys.argv[1] == 'snapcraft'):
+    options = [[], sys.argv]
+else:
+    options = getopt.gnu_getopt(sys.argv, "v", [])
 
 def print_options():
-    print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ]")
+    print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ] [-v]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
     print("  update: updates the .deb packages")
@@ -39,6 +42,11 @@ def print_options():
 if len(options[1]) == 1:
     print_options()
     sys.exit(-1)
+
+debug_param = False
+for o in options[0]:
+    if o[0] == '-v':
+        debug_param = True
 
 command = options[1][1]
 
@@ -199,7 +207,7 @@ elif command == 'build':
     os.system('rm -f created_snaps.tar')
     run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
     run_shell_in_vm_raise("rsync -a /tartmp/ /src/")
-    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft pack --destructive-mode')
+    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft {"-v" if debug_param else ""} pack --destructive-mode')
     run_shell_in_vm_raise('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
     run_shell_in_vm_raise('rm -f created_snaps.tar')
