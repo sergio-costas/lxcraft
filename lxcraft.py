@@ -207,7 +207,7 @@ elif command == 'build':
     os.system('rm -f created_snaps.tar')
     run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
     run_shell_in_vm_raise("rsync -a /tartmp/ /src/")
-    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft {"-v" if debug_param else ""} pack --destructive-mode')
+    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
     run_shell_in_vm_raise('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
     run_shell_in_vm_raise('rm -f created_snaps.tar')
