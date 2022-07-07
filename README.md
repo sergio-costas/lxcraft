@@ -12,6 +12,8 @@ This is an example configuration file:
     vmname: gtk3test
     image: ubuntu/jammy
 
+    force_debug: False
+
     snaps:
       core22:
         - store
@@ -59,6 +61,10 @@ container before building the snap. It is optional.
 * files: contains a list of files and/or folders to copy into the working
 folder inside the container. It is optional; if it isn't specified, all
 the files and folders will be copied inside.
+
+* force_debug: if it is *True*, it will pass always the *-v* parameter to
+*snapcraft*.
+
 
 ## Using lxcraft
 

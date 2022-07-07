@@ -58,6 +58,9 @@ if 'debs' in data:
 else:
     debs = []
 
+if ('force_debug' in data) and (data['force_debug']):
+    debug_param = True
+
 logging.basicConfig(level=logging.INFO)
 
 def copy_file_into(file, destination):
@@ -233,7 +236,7 @@ elif sys.argv[1] == 'snapcraft':
         logging.error("The snapcraft command requires at least one parameter.")
         sys.exit(-1)
 
-    cmd = "cd /src && snapcraft"
+    cmd = f'cd /src && snapcraft {"-v" if debug_param else ""}'
     for p in sys.argv[2:]:
         cmd += " " + p
 
