@@ -20,6 +20,7 @@ import getopt
 import os
 import glob
 import logging
+import hashlib
 
 if (len(sys.argv) > 1) and (sys.argv[1] == 'snapcraft'):
     options = [[], sys.argv]
@@ -52,6 +53,8 @@ command = options[1][1]
 
 data = yaml.safe_load(open("lxcraft.yaml", "r"))
 vmname = data['vmname']
+
+main_folder = f"craft_{hashlib.md5(vmname.encode('utf-8')).hexdigest()}"
 
 if 'debs' in data:
     debs = data['debs']
@@ -160,6 +163,7 @@ def install_snaps():
 
 def check_syntax():
     global data
+    global main_folder
 
     for snap in data['snaps']:
         params = data['snaps'][snap]
@@ -169,7 +173,21 @@ def check_syntax():
         if ('local' not in params) and ('store' not in params):
             logging.critical(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
             sys.exit(-1)
-
+    snap_path = None
+    for path in ['./', './snap']:
+        full_file = os.path.join(path, 'snapcraft.yaml')
+        if os.path.exists(full_file):
+            snap_path = full_file
+            break
+    if snap_path is None:
+        logging.critical("Snapcraft.yaml file not found")
+        sys.exit(-1)
+    linenum = 0
+    with open(snap_path, "r") as snapcraft_file:
+        for line in snapcraft_file.readlines():
+            linenum += 1
+            if main_folder in line:
+                logging.error(f"Found the LXCraft's main folder, {main_folder}, at line {linenum} of the snapcraft.yaml file.")
 
 check_syntax()
 
@@ -203,16 +221,17 @@ elif command == 'build':
         tarlist = ' *'
     os.system(f"tar cf data_for_vm.tar {tarlist}")
     run_shell_in_vm_raise('rm -rf /tartmp')
-    run_shell_in_vm_raise('mkdir -p /src')
+    run_shell_in_vm_raise(f'mkdir -p /{main_folder}')
     run_shell_in_vm_raise('mkdir -p /tartmp')
     copy_file_into('data_for_vm.tar', '/tartmp')
     os.system('rm -f data_for_vm.tar')
     os.system('rm -f created_snaps.tar')
     run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
-    run_shell_in_vm_raise("rsync -a /tartmp/ /src/")
-    run_shell_in_vm_raise(f'cd /src && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
-    run_shell_in_vm_raise('cd /src && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
-    os.system(f'lxc file pull {vmname}/src/created_snaps.tar .')
+    run_shell_in_vm_raise(f"rsync -a /tartmp/ /{main_folder}/")
+    run_shell_in_vm_raise('rm -rf /tartmp')
+    run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
+    run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
+    os.system(f'lxc file pull {vmname}/{main_folder}/created_snaps.tar .')
     run_shell_in_vm_raise('rm -f created_snaps.tar')
     os.system('tar xf created_snaps.tar')
     os.system('rm -f created_snaps.tar')
@@ -220,7 +239,7 @@ elif command == 'build':
     sys.exit(0)
 
 elif command == 'clean':
-    run_shell_in_vm_raise("rm -rf /src")
+    run_shell_in_vm_raise(f"rm -rf /{main_folder}")
     sys.exit(0)
 
 elif command == 'shell':
@@ -236,7 +255,7 @@ elif sys.argv[1] == 'snapcraft':
         logging.error("The snapcraft command requires at least one parameter.")
         sys.exit(-1)
 
-    cmd = f'cd /src && snapcraft {"-v" if debug_param else ""}'
+    cmd = f'cd /{main_folder} && snapcraft {"-v" if debug_param else ""}'
     for p in sys.argv[2:]:
         cmd += " " + p
 

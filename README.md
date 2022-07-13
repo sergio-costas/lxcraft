@@ -107,7 +107,13 @@ when called.
 ## Accessing the container data
 
 The files specified in the *list* part of the configuration file are
-copied inside the container into the */src* folder. It is also there
-where the snapcraft folders (like *parts*, *stage* or *prime*) are
-located, so it is easy to enter inside and check the status of the
-files after a failed building.
+copied inside the container into the */craft_XXXXXXXXX* folder, where
+XXXXXXX is the MD5 hash of the project's name. This is done to ensure
+that the specific lxcraft folder isn't used in a *snapcraft.yaml*
+file, and that only the $CRAFT_XXXXX environment variables are used
+(in fact, lxcraft will check if the folder appears inside the
+*snapcraft.yaml* file, and show an error in that case).
+
+It is also in this folder where the snapcraft folders (like *parts*,
+*stage* or *prime*) are located, so it is easy to enter inside and
+check the status of the files after a failed building.
