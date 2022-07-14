@@ -5,6 +5,37 @@ Simplifies building snap files that depend on locally modified snap files.
 It builds the snap inside a LXC container using "--destructive-mode", which
 allows to do it in a safe way. Everything is defined with a YAML file.
 
+## Uninstalling old, non-pip versions of LXCraft
+
+If the installer says that it can't uninstall lxcraft because it is a
+distutils-installed program, you must first manually remove it from the
+system with the 'uninstall-old.sh' script.
+
+## Installing LXCraft
+
+Just run at the source folder:
+
+    python3 -m pip install .
+
+If you receive an error, ensure that the source folder doesn't have any of
+these folders:
+
+    build
+    dist
+    lxcraft.egg-info
+
+If they do exist, delete them and try again. Also, ensure that no old, pre-pip
+versions are installed, removing them with the 'uninstall-old.sh' script.
+
+## BASH completion
+
+If you installed lxcraft without SUDO, you won't have bash completion support.
+To fix this, just add to your ~/.bashrc file, at the end:
+
+    source "$HOME/.local/share/lxcraft/lxcraft.completion"
+
+and any new shell will have completion.
+
 ## YAML format
 
 This is an example configuration file:
@@ -117,3 +148,13 @@ file, and that only the $CRAFT_XXXXX environment variables are used
 It is also in this folder where the snapcraft folders (like *parts*,
 *stage* or *prime*) are located, so it is easy to enter inside and
 check the status of the files after a failed building.
+
+## Activating the build environment
+
+When a shell is launched, *lxcraft* will check the last *.log* file
+for the last build environment used, and will generate a file called
+*/envi.sh* with it. If you need to try to build something, just run:
+
+    source /envi.sh
+
+and the last build environment will be configured in the shell.

@@ -3,12 +3,12 @@
 import os
 import sys
 from glob import glob
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='lxcraft',
 
-    version='0.1',
+    version='0.2',
 
     author_email='sergio.costas@canonical.com',
 
@@ -29,6 +29,7 @@ setup(
     ],
     data_files=[
         ('/etc/bash_completion.d', ['lxcraft.completion']),
+        ('share/lxcraft', ['lxcraft_gen_container_env.py', 'lxcraft.completion']),
     ],
     scripts=['lxcraft.py'],
 )

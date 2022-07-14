@@ -66,6 +66,28 @@ if ('force_debug' in data) and (data['force_debug']):
 
 logging.basicConfig(level=logging.INFO)
 
+def find_gen_container_env():
+    path_list = [ '/usr', '/usr/local', os.path.join(os.path.expanduser('~'), '.local') ]
+    last_date = None
+    last_file = None
+    for path in path_list:
+        file_name = os.path.join(path, 'share', 'lxcraft', 'lxcraft_gen_container_env.py')
+        if not os.path.exists(file_name):
+            continue
+        file_date = os.path.getmtime(file_name)
+        if (last_date is None) or (last_date < file_date):
+            last_date = file_date
+            last_file = file_name
+    return last_file
+
+def copy_gen_container_env():
+    filepath = find_gen_container_env()
+    if filepath is None:
+        return
+    run_in_vm('rm /usr/bin/lxcraft_gen_container_env.py')
+    copy_file_into(filepath, '/usr/bin')
+    run_in_vm('chmod 755 /usr/bin/lxcraft_gen_container_env.py')
+
 def copy_file_into(file, destination):
     global vmname
 
@@ -73,7 +95,6 @@ def copy_file_into(file, destination):
         destination = '/' + destination
     run_in_vm(f'-- sh -c "mkdir -p {destination}"')
     retval = os.system(f"lxc file push {file} {vmname}{destination}/")
-    run_in_vm(f"ls {destination}")
 
 
 def run_in_vm(command):
@@ -201,9 +222,8 @@ if (command == 'init'):
 elif command == 'destroy':
     logging.info(f"Stopping {vmname}")
     retval = os.system(f"lxc stop {vmname}")
-    if (retval == 0):
-        logging.info(f"Destroying {vmname}")
-        retval = os.system(f"lxc delete {vmname}")
+    logging.info(f"Destroying {vmname}")
+    retval = os.system(f"lxc delete {vmname}")
     sys.exit(retval)
 
 elif command == 'update':
@@ -229,6 +249,8 @@ elif command == 'build':
     run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
     run_shell_in_vm_raise(f"rsync -a /tartmp/ /{main_folder}/")
     run_shell_in_vm_raise('rm -rf /tartmp')
+    run_shell_in_vm_raise('mkdir -p /root/.cache/snapcraft/log/old_logs')
+    run_shell_in_vm_raise('mv /root/.cache/snapcraft/log/*.log /root/.cache/snapcraft/log/old_logs/')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/{main_folder}/created_snaps.tar .')
@@ -243,6 +265,9 @@ elif command == 'clean':
     sys.exit(0)
 
 elif command == 'shell':
+    # keep it updated
+    copy_gen_container_env()
+    run_in_vm('lxcraft_gen_container_env.py')
     run_in_vm('bash')
     sys.exit(0)
 
