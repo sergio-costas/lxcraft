@@ -11,6 +11,10 @@ If the installer says that it can't uninstall lxcraft because it is a
 distutils-installed program, you must first manually remove it from the
 system with the 'uninstall-old.sh' script.
 
+Also, if it was installed locally in your $HOME folder, then you should
+delete any file or folder that contains 'lxcraft' that is located in
+your *$HOME/.local* folder.
+
 ## Installing LXCraft
 
 Just run at the source folder:
