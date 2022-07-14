@@ -233,13 +233,7 @@ elif command == 'update':
 elif command == 'build':
     install_snaps()
     os.system('rm -f data_for_vm.tar')
-    if 'files' in data:
-        tarlist = ""
-        for f in data['files']:
-            tarlist += ' ' + f
-    else:
-        tarlist = ' *'
-    os.system(f"tar cf data_for_vm.tar {tarlist}")
+    os.system('tar cf data_for_vm.tar --exclude=*.snap --exclude=data_for_vm.tar .')
     run_shell_in_vm_raise('rm -rf /tartmp')
     run_shell_in_vm_raise(f'mkdir -p /{main_folder}')
     run_shell_in_vm_raise('mkdir -p /tartmp')
@@ -254,8 +248,8 @@ elif command == 'build':
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/{main_folder}/created_snaps.tar .')
-    run_shell_in_vm_raise('rm -f created_snaps.tar')
-    os.system('tar xf created_snaps.tar')
+    run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar')
+    os.system('tar xf created_snaps.tar --overwrite')
     os.system('rm -f created_snaps.tar')
 
     sys.exit(0)
