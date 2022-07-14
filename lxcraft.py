@@ -84,16 +84,16 @@ def copy_gen_container_env():
     filepath = find_gen_container_env()
     if filepath is None:
         return
-    run_in_vm('rm -f /usr/bin/lxcraft_gen_container_env.py')
+    run_shell_in_vm('rm -f /usr/bin/lxcraft_gen_container_env.py')
     copy_file_into(filepath, '/usr/bin')
-    run_in_vm('chmod 755 /usr/bin/lxcraft_gen_container_env.py')
+    run_shell_in_vm('chmod 755 /usr/bin/lxcraft_gen_container_env.py')
 
 def copy_file_into(file, destination):
     global vmname
 
     if (destination[0] != '/'):
         destination = '/' + destination
-    run_in_vm(f'-- sh -c "mkdir -p {destination}"')
+    run_shell_in_vm(f'mkdir -p {destination}')
     retval = os.system(f"lxc file push {file} {vmname}{destination}/")
 
 
@@ -118,8 +118,8 @@ def run_shell_in_vm_raise(command):
         sys.exit(retval)
 
 def update_vm():
-    run_in_vm_raise("-- apt update")
-    run_in_vm_raise("-- apt dist-upgrade -yy")
+    run_shell_in_vm_raise("apt update")
+    run_shell_in_vm_raise("apt dist-upgrade -yy")
 
 
 def get_snap(snap):
@@ -152,7 +152,7 @@ def install_snaps():
     for deb in debs:
         deblist += " " + deb
     logging.info(f"Installing packages {deblist}")
-    run_in_vm_raise(f"-- apt install -yy " + deblist)
+    run_shell_in_vm_raise(f"apt install -yy {deblist}")
 
     if 'snaps' not in data:
         return 0
@@ -161,7 +161,7 @@ def install_snaps():
         local = False
         name = snap
         params = data['snaps'][snap]
-        command = "-- snap install "
+        command = "snap install "
         if 'local' in params:
             logging.info(f"Installing local snap: {snap}")
             snap = get_snap(snap)
@@ -178,7 +178,7 @@ def install_snaps():
         if 'classic' in params:
             command += "--classic "
         command += name
-        run_in_vm_raise(command)
+        run_shell_in_vm_raise(command)
     run_shell_in_vm('rm -rf /local_snaps')
 
 
@@ -267,7 +267,7 @@ elif command == 'clean':
 elif command == 'shell':
     # keep it updated
     copy_gen_container_env()
-    run_in_vm('lxcraft_gen_container_env.py')
+    run_shell_in_vm('lxcraft_gen_container_env.py')
     run_in_vm('bash')
     sys.exit(0)
 
