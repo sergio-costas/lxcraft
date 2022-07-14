@@ -84,7 +84,7 @@ def copy_gen_container_env():
     filepath = find_gen_container_env()
     if filepath is None:
         return
-    run_in_vm('rm /usr/bin/lxcraft_gen_container_env.py')
+    run_in_vm('rm -f /usr/bin/lxcraft_gen_container_env.py')
     copy_file_into(filepath, '/usr/bin')
     run_in_vm('chmod 755 /usr/bin/lxcraft_gen_container_env.py')
 
@@ -250,7 +250,7 @@ elif command == 'build':
     run_shell_in_vm_raise(f"rsync -a /tartmp/ /{main_folder}/")
     run_shell_in_vm_raise('rm -rf /tartmp')
     run_shell_in_vm_raise('mkdir -p /root/.cache/snapcraft/log/old_logs')
-    run_shell_in_vm_raise('mv /root/.cache/snapcraft/log/*.log /root/.cache/snapcraft/log/old_logs/')
+    run_shell_in_vm('mv /root/.cache/snapcraft/log/*.log /root/.cache/snapcraft/log/old_logs/ 2>/dev/null')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
     os.system(f'lxc file pull {vmname}/{main_folder}/created_snaps.tar .')
