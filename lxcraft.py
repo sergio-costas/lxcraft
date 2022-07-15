@@ -149,7 +149,7 @@ def install_snaps():
     global vmname
     global debs
 
-    deblist = 'snapd build-essential coreutils rsync'
+    deblist = 'snapd build-essential coreutils rsync git'
     for deb in debs:
         deblist += " " + deb
     logging.info(f"Installing packages {deblist}")
@@ -232,9 +232,9 @@ elif command == 'update':
     sys.exit(0)
 
 elif command == 'build':
+    install_snaps()
     copy_script_env('lxcraft_process_folder.py')
     run_shell_in_vm_raise(f'lxcraft_process_folder.py /{main_folder}')
-    install_snaps()
     os.system('rm -f data_for_vm.tar')
     os.system('tar cf data_for_vm.tar --exclude=*.snap --exclude=data_for_vm.tar .')
     run_shell_in_vm_raise('rm -rf /tartmp')
