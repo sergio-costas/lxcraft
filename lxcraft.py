@@ -66,12 +66,12 @@ if ('force_debug' in data) and (data['force_debug']):
 
 logging.basicConfig(level=logging.INFO)
 
-def find_gen_container_env():
+def find_file_in_env(filename):
     path_list = [ '/usr', '/usr/local', os.path.join(os.path.expanduser('~'), '.local') ]
     last_date = None
     last_file = None
     for path in path_list:
-        file_name = os.path.join(path, 'share', 'lxcraft', 'lxcraft_gen_container_env.py')
+        file_name = os.path.join(path, 'share', 'lxcraft', filename)
         if not os.path.exists(file_name):
             continue
         file_date = os.path.getmtime(file_name)
@@ -80,13 +80,14 @@ def find_gen_container_env():
             last_file = file_name
     return last_file
 
-def copy_gen_container_env():
-    filepath = find_gen_container_env()
+def copy_script_env(filename):
+    filepath = find_file_in_env(filename)
     if filepath is None:
         return
-    run_shell_in_vm('rm -f /usr/bin/lxcraft_gen_container_env.py')
+    run_shell_in_vm(f'rm -f /usr/bin/{filename}')
     copy_file_into(filepath, '/usr/bin')
-    run_shell_in_vm('chmod 755 /usr/bin/lxcraft_gen_container_env.py')
+    run_shell_in_vm(f'chmod 755 /usr/bin/{filename}')
+
 
 def copy_file_into(file, destination):
     global vmname
@@ -231,6 +232,8 @@ elif command == 'update':
     sys.exit(0)
 
 elif command == 'build':
+    copy_script_env('lxcraft_process_folder.py')
+    run_shell_in_vm_raise(f'lxcraft_process_folder.py /{main_folder}')
     install_snaps()
     os.system('rm -f data_for_vm.tar')
     os.system('tar cf data_for_vm.tar --exclude=*.snap --exclude=data_for_vm.tar .')
@@ -260,7 +263,7 @@ elif command == 'clean':
 
 elif command == 'shell':
     # keep it updated
-    copy_gen_container_env()
+    copy_script_env('lxcraft_gen_container_env.py')
     run_shell_in_vm('lxcraft_gen_container_env.py')
     run_in_vm('bash')
     sys.exit(0)

@@ -29,7 +29,7 @@ setup(
     ],
     data_files=[
         ('/etc/bash_completion.d', ['lxcraft.completion']),
-        ('share/lxcraft', ['lxcraft_gen_container_env.py', 'lxcraft.completion']),
+        ('share/lxcraft', ['lxcraft_gen_container_env.py', 'lxcraft.completion', 'lxcraft_process_folder.py']),
     ],
     scripts=['lxcraft.py'],
 )
