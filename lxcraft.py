@@ -149,7 +149,7 @@ def install_snaps():
     global vmname
     global debs
 
-    deblist = 'snapd build-essential coreutils rsync git'
+    deblist = 'snapd rsync git'
     for deb in debs:
         deblist += " " + deb
     logging.info(f"Installing packages {deblist}")
