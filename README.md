@@ -154,3 +154,35 @@ for the last build environment used, and will generate a file called
     source /envi.sh
 
 and the last build environment will be configured in the shell.
+
+## Creating the "contents" snap from the "SDK" snap
+
+Although the SDK snap for Gnome can be built directly using snapcraft,
+the "contents" one can't, because, by default, it downloads the SDK
+from the store and uses it to get the libraries and other elements.
+So after building a custom SDK snap, a custom "contents" snap must be
+built to.
+
+To do this, just edit the "snapcraft.yaml" file forthe "contents" and
+change the line:
+
+    stage-snaps: [ gnome-42-2204-sdk/latest/edge ]
+
+with:
+
+    override-build: |
+      craftctl default
+      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/usr $CRAFT_PART_INSTALL/
+      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/etc $CRAFT_PART_INSTALL/
+      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/var $CRAFT_PART_INSTALL/
+      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/lib $CRAFT_PART_INSTALL/
+
+Now, extract the contents of the SDK snap in the "contents" folder
+with:
+
+    unsquashfs gnome-XX-XXXX-sdk.snap
+
+and rename the *squashfs* folder to *sdk*.
+
+Now you can use *lxcraft* to create the *contents* snap from a
+SDK one.
