@@ -172,17 +172,10 @@ with:
 
     override-build: |
       craftctl default
-      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/usr $CRAFT_PART_INSTALL/
-      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/etc $CRAFT_PART_INSTALL/
-      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/var $CRAFT_PART_INSTALL/
-      cp -a $SNAPCRAFT_PROJECT_DIR/sdk/lib $CRAFT_PART_INSTALL/
+      cp -a /snap/gnome-42-2204-sdk/current/usr $CRAFT_PART_INSTALL/
+      cp -a /snap/gnome-42-2204-sdk/current/etc $CRAFT_PART_INSTALL/
+      cp -a /snap/gnome-42-2204-sdk/current/var $CRAFT_PART_INSTALL/
+      cp -a /snap/gnome-42-2204-sdk/current/lib $CRAFT_PART_INSTALL/
 
-Now, extract the contents of the SDK snap in the "contents" folder
-with:
-
-    unsquashfs gnome-XX-XXXX-sdk.snap
-
-and rename the *squashfs* folder to *sdk*.
-
-Now you can use *lxcraft* to create the *contents* snap from a
-SDK one.
+and ensure that in the *lxcraft.yaml* file you are installing the SDK
+package from the local one.
