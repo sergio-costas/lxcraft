@@ -31,7 +31,7 @@ def print_options():
     print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ] [-v] [--copy-data]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
-    print("  update: updates the .deb packages")
+    print("  update: updates the .deb packages and the snaps")
     print("  build: builds the .snap file")
     print("  clean: deletes all the files in the build folder, to start over")
     print("  snapcraft XXXX: executes the command XXXX with snapcraft inside the container")
@@ -248,6 +248,7 @@ elif command == 'destroy':
 
 elif command == 'update':
     update_vm()
+    install_snaps()
     sys.exit(0)
 
 elif command == 'build':

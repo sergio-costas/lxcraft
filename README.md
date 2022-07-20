@@ -111,7 +111,7 @@ It will do:
     apt update
     apt dist-upgrade -yy
 
-inside the container.
+inside the container, and also will reinstall all the snaps.
 
 To destroy the container, just use *lxcraft.py destroy*. It can be
 regenerated with *lxcraft.py init* again if needed.
