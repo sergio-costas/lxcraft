@@ -133,10 +133,10 @@ when called.
 
 ## Accessing the container data
 
-The files specified in the *list* part of the configuration file are
-copied inside the container into the */craft_XXXXXXXXX* folder, where
-XXXXXXX is the MD5 hash of the project's name. This is done to ensure
-that the specific lxcraft folder isn't used in a *snapcraft.yaml*
+All the files in the project folder are copied inside the container into
+the */craft_XXXXXXXXX* folder at the beginning of the build process,
+where XXXXXXX is the MD5 hash of the project's name. This is done to
+ensure that the specific lxcraft folder isn't used in a *snapcraft.yaml*
 file, and that only the $CRAFT_XXXXX environment variables are used
 (in fact, lxcraft will check if the folder appears inside the
 *snapcraft.yaml* file, and show an error in that case).
@@ -144,6 +144,10 @@ file, and that only the $CRAFT_XXXXX environment variables are used
 It is also in this folder where the snapcraft folders (like *parts*,
 *stage* or *prime*) are located, so it is easy to enter inside and
 check the status of the files after a failed building.
+
+It is possible to include the *--copy-data* parameter after the *shell*
+command, and the current data in the project folder will be copied
+into the container, like when the project is build.
 
 ## Activating the build environment
 

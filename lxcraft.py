@@ -25,10 +25,10 @@ import hashlib
 if (len(sys.argv) > 1) and (sys.argv[1] == 'snapcraft'):
     options = [[], sys.argv]
 else:
-    options = getopt.gnu_getopt(sys.argv, "v", [])
+    options = getopt.gnu_getopt(sys.argv, "v", ["copy-data"])
 
 def print_options():
-    print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ] [-v]")
+    print("Usage: lxcraft [init|destroy|update|build|clean|shell| snapcraft XXXX ] [-v] [--copy-data]")
     print("  init: initializes the container and installs the needed .deb packages")
     print("  destroy: destroys the container")
     print("  update: updates the .deb packages")
@@ -38,16 +38,21 @@ def print_options():
     print("  shell: opens a shell inside the container")
     print("  installdeps: installs in the local system the snap dependencies")
     print("  help: shows this help")
-
+    print("  -v: adds -v to snapcraft, showing all verbose")
+    print("  --copy-data: when used with 'shell', will copy the project data folder into the VM")
 
 if len(options[1]) == 1:
     print_options()
     sys.exit(-1)
 
 debug_param = False
-for o in options[0]:
-    if o[0] == '-v':
-        debug_param = True
+copy_data = False
+if len(options[0]) != 0:
+    for o in options[0][0]:
+        if o == '-v':
+            debug_param = True
+        if o == '--copy-data':
+            copy_data = True
 
 command = options[1][1]
 
@@ -211,6 +216,20 @@ def check_syntax():
             if main_folder in line:
                 logging.error(f"Found the LXCraft's main folder, {main_folder}, at line {linenum} of the snapcraft.yaml file.")
 
+def copy_project_files():
+    os.system('rm -f data_for_vm.tar')
+    os.system('tar cf data_for_vm.tar --exclude=*.snap --exclude=data_for_vm.tar .')
+    run_shell_in_vm_raise('rm -rf /tartmp')
+    run_shell_in_vm_raise(f'mkdir -p /{main_folder}')
+    run_shell_in_vm_raise('mkdir -p /tartmp')
+    copy_file_into('data_for_vm.tar', '/tartmp')
+    os.system('rm -f data_for_vm.tar')
+    os.system('rm -f created_snaps.tar')
+    run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
+    run_shell_in_vm_raise('rm -f /tartmp/data_for_vm.tar')
+    run_shell_in_vm_raise(f"rsync -a /tartmp/ /{main_folder}/")
+    run_shell_in_vm_raise('rm -rf /tartmp')
+
 check_syntax()
 
 if (command == 'init'):
@@ -234,18 +253,8 @@ elif command == 'update':
 elif command == 'build':
     install_snaps()
     copy_script_env('lxcraft_process_folder.py')
+    copy_project_files()
     run_shell_in_vm_raise(f'lxcraft_process_folder.py /{main_folder}')
-    os.system('rm -f data_for_vm.tar')
-    os.system('tar cf data_for_vm.tar --exclude=*.snap --exclude=data_for_vm.tar .')
-    run_shell_in_vm_raise('rm -rf /tartmp')
-    run_shell_in_vm_raise(f'mkdir -p /{main_folder}')
-    run_shell_in_vm_raise('mkdir -p /tartmp')
-    copy_file_into('data_for_vm.tar', '/tartmp')
-    os.system('rm -f data_for_vm.tar')
-    os.system('rm -f created_snaps.tar')
-    run_shell_in_vm_raise("cd /tartmp && tar xf data_for_vm.tar")
-    run_shell_in_vm_raise(f"rsync -a /tartmp/ /{main_folder}/")
-    run_shell_in_vm_raise('rm -rf /tartmp')
     run_shell_in_vm_raise('mkdir -p /root/.cache/snapcraft/log/old_logs')
     run_shell_in_vm('mv /root/.cache/snapcraft/log/*.log /root/.cache/snapcraft/log/old_logs/ 2>/dev/null')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
@@ -265,6 +274,8 @@ elif command == 'shell':
     # keep it updated
     copy_script_env('lxcraft_gen_container_env.py')
     run_shell_in_vm('lxcraft_gen_container_env.py')
+    if copy_data:
+        copy_project_files()
     run_in_vm('bash')
     sys.exit(0)
 
