@@ -57,7 +57,11 @@ if len(options[0]) != 0:
 command = options[1][1]
 
 data = yaml.safe_load(open("lxcraft.yaml", "r"))
-vmname = data['vmname']
+if 'vmname' in data:
+    vmname = data['vmname']
+else:
+    vmname = os.path.basename(os.getcwd())
+print(f"VMName: {vmname}")
 
 main_folder = f"craft_{hashlib.md5(vmname.encode('utf-8')).hexdigest()}"
 

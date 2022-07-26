@@ -65,7 +65,10 @@ This is an example configuration file:
       - cmake
       - git
 
-* vmname contains the name for the LXC container
+* vmname contains the name for the LXC container. If no name is
+provided, the current folder will be used (but only the last
+element; thus, running at /home/user/workspace/aprogram will use
+'aprogram' as the name for the LXC container).
 
 * image: the image from which generate the container
 
