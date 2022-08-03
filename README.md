@@ -50,6 +50,9 @@ This is an example configuration file:
     force_debug: False
 
     snaps:
+      snapcraft:
+        - store
+        - channel=5.x
       core22:
         - store
         - edge
@@ -88,6 +91,8 @@ the local will be installed. Each snap can have these elements:
   * classic: the snap requires the --classic parameter to be installed
 
   * edge: only for 'store' snaps, specifies to install from latest/edge
+
+  * channel=...: allows to specify a channel
 
 * debs: contains a list of .deb files to be installed inside the
 container before building the snap. It is optional.

@@ -205,7 +205,7 @@ def check_syntax():
             logging.critical(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
             sys.exit(-1)
     snap_path = None
-    for path in ['./', './snap']:
+    for path in ['./', './snap', './build-aux/snap']:
         full_file = os.path.join(path, 'snapcraft.yaml')
         if os.path.exists(full_file):
             snap_path = full_file
@@ -322,6 +322,9 @@ elif sys.argv[1] == 'installdeps':
             command += "--dangerous "
         if 'classic' in params:
             command += "--classic "
+        for param in params:
+            if param.startswith("channel="):
+                command += f"--{param} "
         command += name
         os.system(command)
 
