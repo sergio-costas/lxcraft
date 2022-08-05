@@ -168,15 +168,16 @@ def install_snaps():
         return 0
     run_shell_in_vm('mkdir -p /local_snaps')
     for snap in data['snaps']:
-        local = False
         name = snap
         params = data['snaps'][snap]
+        local = 'local' in params
         command = "snap install "
         snap_path = snap
         for param in params:
             if isinstance(param, dict) and ('path' in param):
                 snap_path = param['path'].strip()
-        if 'local' in params:
+                local = True
+        if local:
             if snap == snap_path:
                 logging.info(f"Installing local snap: {snap}")
             else:
@@ -185,13 +186,11 @@ def install_snaps():
             if snap is None:
                 sys.exit(-1)
             copy_file_into(snap, '/local_snaps')
-            local = True
             name = f'/local_snaps/{os.path.basename(snap)}'
+            command += "--dangerous "
         else:
             if 'edge' in params:
                 command += '--edge '
-        if local:
-            command += "--dangerous "
         if 'classic' in params:
             command += "--classic "
         command += name
@@ -207,9 +206,6 @@ def check_syntax():
         params = data['snaps'][snap]
         if params is None:
             logging.error(f"Snap {snap} lacks parameters. Aborting.")
-            sys.exit(-1)
-        if ('local' not in params) and ('store' not in params):
-            logging.critical(f"Snap {snap} lacks 'store' or 'local' definition. Aborting.")
             sys.exit(-1)
     snap_path = None
     for path in ['./', './snap', './build-aux/snap']:

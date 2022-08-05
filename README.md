@@ -54,7 +54,6 @@ This is an example configuration file:
         - store
         - channel=5.x
       core22:
-        - store
         - edge
       gtk-common-themes:
         - store
@@ -85,7 +84,9 @@ so it is possible to specify a local snap to be installed before
 another from the store that depends on that, thus ensuring that
 the local will be installed. Each snap can have these elements:
 
-  * store: it means that the snap must be downloaded from the SNAP store
+  * store: it means that the snap must be downloaded from the SNAP store.
+           If neither 'local' nor 'store' element is present, it will be
+           presumed that it is 'store', unless a 'path' element is present.
 
   * local: the snap is located in the local drive, in the specified path
 
@@ -94,6 +95,13 @@ the local will be installed. Each snap can have these elements:
   * edge: only for 'store' snaps, specifies to install from latest/edge
 
   * channel=...: allows to specify a channel
+
+  * path: only for local snaps. It specifies the path where the local
+          snap is located. It overrides a path specified in the snap
+          name. If it does exist, it is presumed that the snap is local,
+          even if the 'local' element isn't present. This allows to
+          easily switch between local and remote SNAPs just by
+          commenting the 'path' element.
 
 * debs: contains a list of .deb files to be installed inside the
 container before building the snap. It is optional.
