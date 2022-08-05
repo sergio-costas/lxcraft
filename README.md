@@ -61,7 +61,8 @@ This is an example configuration file:
       /home/raster/workspace/snapcraft/snapcraft*.snap:
         - classic
         - local
-      /home/raster/workspace/gnome-sdk/gnome-sdk.snap:
+      gnome-42-2204-sdk:
+        - path: /home/raster/workspace/gnome-sdk/gnome-sdk.snap
         - local
 
     debs:

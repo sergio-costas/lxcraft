@@ -8,7 +8,7 @@ from setuptools import setup
 setup(
     name='lxcraft',
 
-    version='0.2',
+    version='0.3',
 
     author_email='sergio.costas@canonical.com',
 

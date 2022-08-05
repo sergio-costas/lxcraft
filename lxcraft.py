@@ -172,9 +172,16 @@ def install_snaps():
         name = snap
         params = data['snaps'][snap]
         command = "snap install "
+        snap_path = snap
+        for param in params:
+            if isinstance(param, dict) and ('path' in param):
+                snap_path = param['path'].strip()
         if 'local' in params:
-            logging.info(f"Installing local snap: {snap}")
-            snap = get_snap(snap)
+            if snap == snap_path:
+                logging.info(f"Installing local snap: {snap}")
+            else:
+                logging.info(f"Installing snap {snap} locally from {snap_path}")
+            snap = get_snap(snap_path)
             if snap is None:
                 sys.exit(-1)
             copy_file_into(snap, '/local_snaps')
