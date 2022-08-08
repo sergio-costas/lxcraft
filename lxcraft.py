@@ -158,7 +158,7 @@ def install_snaps():
     global vmname
     global debs
 
-    deblist = 'snapd rsync git libc-dev'
+    deblist = 'snapd rsync git libc6-dev'
     for deb in debs:
         deblist += " " + deb
     logging.info(f"Installing packages {deblist}")
