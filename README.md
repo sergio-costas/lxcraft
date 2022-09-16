@@ -69,9 +69,9 @@ This is an example configuration file:
       - git
 
 * vmname contains the name for the LXC container. If no name is
-provided, the current folder will be used (but only the last
+provided, 'lxcraft' plus the current folder will be used (but only the last
 element; thus, running at /home/user/workspace/aprogram will use
-'aprogram' as the name for the LXC container).
+'lxcraft_aprogram' as the name for the LXC container).
 
 * image: the image from which generate the container
 
