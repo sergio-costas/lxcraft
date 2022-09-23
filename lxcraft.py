@@ -60,7 +60,7 @@ data = yaml.safe_load(open("lxcraft.yaml", "r"))
 if 'vmname' in data:
     vmname = data['vmname']
 else:
-    vmname = "lxcraft_" + os.path.basename(os.getcwd())
+    vmname = "lxcraft-" + os.path.basename(os.getcwd().replace("_","-"))
 print(f"VMName: {vmname}")
 
 main_folder = f"craft_{hashlib.md5(vmname.encode('utf-8')).hexdigest()}"
