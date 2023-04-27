@@ -266,7 +266,7 @@ elif command == 'build':
     run_shell_in_vm_raise('mkdir -p /root/.cache/snapcraft/log/old_logs')
     run_shell_in_vm('mv /root/.cache/snapcraft/log/*.log /root/.cache/snapcraft/log/old_logs/ 2>/dev/null')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f data_for_vm.tar && rm -f *.snap && snapcraft {"-v" if debug_param else ""} --destructive-mode')
-    run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap')
+    run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar && tar cf created_snaps.tar *.snap *.debug')
     os.system(f'lxc file pull {vmname}/{main_folder}/created_snaps.tar .')
     run_shell_in_vm_raise(f'cd /{main_folder} && rm -f created_snaps.tar')
     os.system('tar xf created_snaps.tar --overwrite')
