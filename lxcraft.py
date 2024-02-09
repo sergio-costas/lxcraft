@@ -240,7 +240,7 @@ def copy_project_files():
 check_syntax()
 
 if (command == 'init'):
-    retval = os.system(f"lxc launch images:{data['image']} {vmname}")
+    retval = os.system(f"lxc launch {data['image']} {vmname}")
     if retval != 0:
         sys.exit(retval)
     update_vm()

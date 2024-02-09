@@ -1,5 +1,5 @@
 vmname: gtk3test
-image: ubuntu/jammy
+image: images:ubuntu/jammy
 
 snaps:
   core22:
