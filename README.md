@@ -45,7 +45,7 @@ and any new shell will have completion.
 This is an example configuration file:
 
     vmname: gtk3test
-    image: ubuntu/jammy
+    image: images:ubuntu/jammy
 
     force_debug: False
 
