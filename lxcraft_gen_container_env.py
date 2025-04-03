@@ -6,7 +6,7 @@ import sys
 
 last_log = None
 last_date = None
-for log in glob.glob('/root/.cache/snapcraft/log/*.log'):
+for log in glob.glob('/root/.local/state/snapcraft/log/*.log'):
     file_date = os.path.getmtime(log)
     if (last_date is None) or (last_date < file_date):
         last_log = log
@@ -21,7 +21,7 @@ env_lines = []
 total_lines = len(log_data)
 do_copy = False
 for line in log_data:
-    if line == '# Environment':
+    if line.startswith('##') and line.endswith('environment'):
         if do_copy:
             continue
         do_copy = True
